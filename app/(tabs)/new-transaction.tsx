@@ -1,72 +1,90 @@
 import React, { useState } from 'react';
 import { Text, StatusBar, TextInput, Button, Platform, StyleSheet, View, Alert } from 'react-native';
-import { useAddPurchase } from '../store';
+import { useForm, Controller } from 'react-hook-form';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { useAddPurchase } from '../store';
 
+interface FormData {
+  amount: string;
+  category: string;
+  note: string;
+}
 
 export default function TabNewTransactionScreen() {
-  const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState('');
   const [date, setDate] = useState(new Date());
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [note, setNote] = useState('');
-
+  const { control, handleSubmit, formState: { errors }, reset } = useForm<FormData>();
   const addPurchase = useAddPurchase();
 
-  const handleSubmit = () => {
-    if (!amount || !category || !note) {
-      Alert.alert('Error', 'Please fill all the fields');
-      return;
-    }
-
-    addPurchase(Number(amount), category, date.toISOString(), note);
-    setAmount('');
-    setCategory('');
+  const onSubmit = (data: FormData) => {
+    addPurchase(Number(data.amount), data.category, date.toISOString(), data.note);
+    reset();
     setDate(new Date());
-    setNote('');
   };
 
   const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    setShowDatePicker(false);
-    if (selectedDate) {
-      setDate(selectedDate);
-    }
+    const currentDate = selectedDate || date;
+    setDate(currentDate);
   };
-  
-  
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Add Transaction</Text>
-      <TextInput
-        style={styles.input}
-        value={amount}
-        onChangeText={setAmount}
-        placeholder="Amount"
-        keyboardType="numeric"
+
+      <Controller
+        control={control}
+        render={({ field: { onChange, onBlur, value } }) => (
+          <TextInput
+            style={styles.input}
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+            placeholder="Amount"
+            keyboardType="numeric"
+          />
+        )}
+        name="amount"
+        rules={{ required: 'You must enter an amount' }}
       />
-      <TextInput
-        style={styles.input}
-        value={category}
-        onChangeText={setCategory}
-        placeholder="Category"
+      {errors.amount && <Text style={styles.errorText}>{errors.amount.message}</Text>}
+
+      <Controller
+        control={control}
+        render={({ field: { onChange, onBlur, value } }) => (
+          <TextInput
+            style={styles.input}
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+            placeholder="Category"
+          />
+        )}
+        name="category"
+        rules={{ required: 'You must enter a category' }}
       />
-      <Button title="Select Date" onPress={() => setShowDatePicker(true)} />
-      {showDatePicker && (
-        <DateTimePicker
-          value={date}
-          mode="date"
-          display="default"
-          onChange={handleDateChange}
-        />
-      )}
-      <TextInput
-        style={styles.input}
-        value={note}
-        onChangeText={setNote}
-        placeholder="Note"
+      {errors.category && <Text style={styles.errorText}>{errors.category.message}</Text>}
+
+      <DateTimePicker
+        value={date}
+        mode="date"
+        display="default"
+        onChange={handleDateChange}
       />
-      <Button title="Submit" onPress={handleSubmit} />
+
+      <Controller
+        control={control}
+        render={({ field: { onChange, onBlur, value } }) => (
+          <TextInput
+            style={styles.input}
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+            placeholder="Note"
+          />
+        )}
+        name="note"
+      />
+
+      <Button title="Submit" onPress={handleSubmit(onSubmit)} />
       <StatusBar barStyle={Platform.OS === 'ios' ? 'dark-content' : 'light-content'} />
     </View>
   );
@@ -89,5 +107,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginTop: 10,
     padding: 10,
-  }
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 10,
+  },
 });
