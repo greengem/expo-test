@@ -1,18 +1,54 @@
-import { StatusBar } from 'expo-status-bar';
-import { Platform, StyleSheet } from 'react-native';
-
-import EditScreenInfo from '@/components/EditScreenInfo';
+import React, { useState } from 'react';
+import { StatusBar, TextInput, Button, Platform, StyleSheet } from 'react-native';
 import { Text, View } from '@/components/Themed';
+import { useAddPurchase } from './store';
 
 export default function ModalScreen() {
+  const [amount, setAmount] = useState('');
+  const [category, setCategory] = useState('');
+  const [date, setDate] = useState('');
+  const [note, setNote] = useState('');
+
+  const addPurchase = useAddPurchase();
+
+  const handleSubmit = () => {
+    addPurchase(Number(amount), category, date, note);
+    setAmount('');
+    setCategory('');
+    setDate('');
+    setNote('');
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Modal</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/modal.tsx" />
-
-      {/* Use a light status bar on iOS to account for the black space above the modal */}
-      <StatusBar style={Platform.OS === 'ios' ? 'light' : 'auto'} />
+      <Text style={styles.title}>Add Transaction</Text>
+      <TextInput
+        style={styles.input}
+        value={amount}
+        onChangeText={setAmount}
+        placeholder="Amount"
+        keyboardType="numeric"
+      />
+      <TextInput
+        style={styles.input}
+        value={category}
+        onChangeText={setCategory}
+        placeholder="Category"
+      />
+      <TextInput
+        style={styles.input}
+        value={date}
+        onChangeText={setDate}
+        placeholder="Date"
+      />
+      <TextInput
+        style={styles.input}
+        value={note}
+        onChangeText={setNote}
+        placeholder="Note"
+      />
+      <Button title="Submit" onPress={handleSubmit} />
+      <StatusBar barStyle={Platform.OS === 'ios' ? 'dark-content' : 'light-content'} />
     </View>
   );
 }
@@ -26,6 +62,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
+  },
+  input: {
+    height: 40,
+    width: '80%',
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginTop: 10,
+    padding: 10,
   },
   separator: {
     marginVertical: 30,
