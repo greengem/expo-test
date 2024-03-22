@@ -1,14 +1,41 @@
-import { StyleSheet } from 'react-native';
+// index.tsx
+import { Button, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { usePurchases, useAddPurchase, useDeletePurchase } from '../store';
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+interface Purchase {
+  id: number;
+  amount: number;
+  category: string;
+  date: string;
+  note?: string;
+}
 
 export default function TabOneScreen() {
+  const purchases = usePurchases();
+  const addPurchase = useAddPurchase();
+  const deletePurchase = useDeletePurchase();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
+      <Text style={styles.title}>Transactions</Text>
+      <Button
+        title="Add Transaction"
+        onPress={() => addPurchase(100, 'Groceries', new Date().toISOString(), 'Test transaction')}
+      />
+      <ScrollView style={styles.listContainer}>
+        {purchases.map((purchase) => (
+          <View key={purchase.id} style={styles.purchaseItem}>
+            <Text>Amount: ${purchase.amount}</Text>
+            <Text>Category: {purchase.category}</Text>
+            <Text>Date: {purchase.date}</Text>
+            {purchase.note && <Text>Note: {purchase.note}</Text>}
+            <Button
+              title="Delete"
+              onPress={() => deletePurchase(purchase.id)} // Call deletePurchase when the button is clicked
+            />
+          </View>
+        ))}
+      </ScrollView>
     </View>
   );
 }
@@ -17,15 +44,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
+    paddingTop: 20,
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  listContainer: {
+    width: '100%',
+  },
+  purchaseItem: {
+    backgroundColor: '#f0f0f0',
+    padding: 10,
+    marginVertical: 4,
+    marginHorizontal: 16,
+    borderRadius: 5,
   },
 });
