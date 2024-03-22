@@ -1,23 +1,39 @@
 import React, { useState } from 'react';
-import { StatusBar, TextInput, Button, Platform, StyleSheet } from 'react-native';
-import { Text, View } from '@/components/Themed';
+import { Text, StatusBar, TextInput, Button, Platform, StyleSheet, View, Alert } from 'react-native';
 import { useAddPurchase } from '../store';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
-export default function TabTwoScreen() {
+
+export default function TabNewTransactionScreen() {
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
-  const [date, setDate] = useState('');
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [note, setNote] = useState('');
 
   const addPurchase = useAddPurchase();
 
   const handleSubmit = () => {
-    addPurchase(Number(amount), category, date, note);
+    if (!amount || !category || !note) {
+      Alert.alert('Error', 'Please fill all the fields');
+      return;
+    }
+
+    addPurchase(Number(amount), category, date.toISOString(), note);
     setAmount('');
     setCategory('');
-    setDate('');
+    setDate(new Date());
     setNote('');
   };
+
+  const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      setDate(selectedDate);
+    }
+  };
+  
+  
 
   return (
     <View style={styles.container}>
@@ -35,12 +51,15 @@ export default function TabTwoScreen() {
         onChangeText={setCategory}
         placeholder="Category"
       />
-      <TextInput
-        style={styles.input}
-        value={date}
-        onChangeText={setDate}
-        placeholder="Date"
-      />
+      <Button title="Select Date" onPress={() => setShowDatePicker(true)} />
+      {showDatePicker && (
+        <DateTimePicker
+          value={date}
+          mode="date"
+          display="default"
+          onChange={handleDateChange}
+        />
+      )}
       <TextInput
         style={styles.input}
         value={note}
@@ -52,6 +71,7 @@ export default function TabTwoScreen() {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -69,10 +89,5 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginTop: 10,
     padding: 10,
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
+  }
 });

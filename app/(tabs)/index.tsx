@@ -10,7 +10,7 @@ interface Purchase {
   note?: string;
 }
 
-export default function TabOneScreen() {
+export default function TabDashboardScreen() {
   const purchases = usePurchases();
   const addPurchase = useAddPurchase();
   const deletePurchase = useDeletePurchase();
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   purchaseItem: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: 'white',
     padding: 10,
     marginVertical: 4,
     marginHorizontal: 16,
