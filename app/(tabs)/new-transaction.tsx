@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Text, StatusBar, TextInput, Button, Platform, StyleSheet, View, Alert } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useAddPurchase } from '../store';
+import Toast from 'react-native-root-toast';
 
 interface FormData {
   amount: string;
@@ -13,12 +14,33 @@ interface FormData {
 export default function TabNewTransactionScreen() {
   const [date, setDate] = useState(new Date());
   const { control, handleSubmit, formState: { errors }, reset } = useForm<FormData>();
+
+  const amountInputRef = useRef<TextInput>(null);
+
   const addPurchase = useAddPurchase();
+  
 
   const onSubmit = (data: FormData) => {
     addPurchase(Number(data.amount), data.category, date.toISOString(), data.note);
-    reset();
+    reset({
+      amount: '',
+      category: '',
+      note: ''
+    });
     setDate(new Date());
+
+    if (amountInputRef.current) {
+      amountInputRef.current.focus();
+    }
+
+    Toast.show('Transaction added successfully!', {
+      duration: Toast.durations.LONG,
+      position: Toast.positions.TOP,
+      shadow: true,
+      animation: true,
+      hideOnPress: true,
+      delay: 0,
+    });
   };
 
   const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
@@ -34,6 +56,7 @@ export default function TabNewTransactionScreen() {
         control={control}
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
+            ref={amountInputRef}
             style={styles.input}
             onBlur={onBlur}
             onChangeText={onChange}
