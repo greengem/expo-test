@@ -12,16 +12,10 @@ interface Purchase {
 
 export default function TabDashboardScreen() {
   const purchases = usePurchases();
-  const addPurchase = useAddPurchase();
   const deletePurchase = useDeletePurchase();
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Transactions</Text>
-      <Button
-        title="Add Transaction"
-        onPress={() => addPurchase(100, 'Groceries', new Date().toISOString(), 'Test transaction')}
-      />
       <ScrollView style={styles.listContainer}>
         {purchases.map((purchase) => (
           <View key={purchase.id} style={styles.purchaseItem}>
